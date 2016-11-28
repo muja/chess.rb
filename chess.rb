@@ -305,7 +305,7 @@ module MovePredicate
             coords = current + direct[@rank, @file, context]
             break if context.board.out_of_bounds?(*coords)
             current = context.board[*coords]
-            move = Move.new(context.piece, context.source, current)
+            move = Move.new(context.source, current)
             if @if[move]
               moves << move
             end
@@ -341,7 +341,6 @@ module MovePredicate
         end
         if predicate
           Move.new(
-            context.piece,
             context.source,
             context.board[context.piece.team.home_rank, side.file]
           )
@@ -424,12 +423,15 @@ class Team
 end
 
 class Move
-  attr_reader :piece, :from, :to
+  attr_reader :from, :to
 
-  def initialize(piece, from, to)
-    @piece = piece
+  def initialize(from, to)
     @from = from
     @to = to
+  end
+
+  def piece
+    from.piece
   end
 
   def to_s
