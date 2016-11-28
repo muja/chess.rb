@@ -17,11 +17,6 @@ module Chess
         move.to.empty? || context.piece.team != move.to.piece.team
       end.uniq
     end
-
-    # algebraic notation
-    def an
-      self.class.name[0]
-    end
   end
 
   class Bishop < Piece
@@ -35,10 +30,6 @@ module Chess
       RELATIVE(2, 1).all_directions,
       RELATIVE(1, 2).all_directions
     ]
-
-    def an
-      'N'
-    end
   end
 
   class Rook < Piece

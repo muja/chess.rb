@@ -19,41 +19,6 @@ module Chess
       end
     end
 
-    def as_map
-      "".tap do |map|
-        fields.each do |rank|
-          rank.each do |field|
-            if field.has_piece?
-              map << field.piece.an_fen
-            else
-              map << '.'
-            end
-          end
-          map << "\n"
-        end
-      end
-    end
-
-    def self.from_map(text)
-      Board.new.tap do |board|
-        text.lines.each_with_index do |line, rank|
-          line.strip.chars.each_with_index do |char, file|
-            next if char == '.'
-            team = char.downcase == char ? Team::BLACK : Team::WHITE
-            piece = {
-              r: Rook,
-              n: Knight,
-              b: Bishop,
-              q: Queen,
-              k: King,
-              p: Pawn
-            }[char.downcase.intern].new(team)
-            board[rank, file].put(piece)
-          end
-        end
-      end
-    end
-
     def each
       fields.each do |rank|
         rank.each(&:yield)

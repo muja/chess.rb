@@ -39,12 +39,6 @@ module Chess
       [@rank + arr[0], @file + arr[1]]
     end
 
-    # algebraic notation
-    def an
-      [(@file + 97).chr, 8 - @rank].join
-    end
-    alias_method :to_s, :an
-
     def ==(other)
       self.rank == other.rank && self.file == other.file
     end
