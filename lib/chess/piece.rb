@@ -1,3 +1,5 @@
+require 'chess/move_predicate'
+
 module Chess
   class Piece
     extend MovePredicate
@@ -18,7 +20,7 @@ module Chess
 
     # algebraic notation
     def an
-      self.class.to_s[0]
+      self.class.name[0]
     end
   end
 
@@ -55,8 +57,11 @@ module Chess
 
   class Pawn < Piece
     MOVES = [
+      # NON-CAPTURING
       FORWARD(1).if { |move| move.to.empty? },
       FORWARD(2).if { |move| move.to.empty? && (move.to.rank - move.piece.team.home_rank).abs == 3 },
+
+      # CAPTURING
       RELATIVE(1, 1).if { |move| move.to.has_piece? && move.to.piece.team != move.piece.team },
       RELATIVE(1, -1).if { |move| move.to.has_piece? && move.to.piece.team != move.piece.team },
       EN_PASSANT()
