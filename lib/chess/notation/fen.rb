@@ -32,7 +32,7 @@ module Chess
           [
             self.board.fen,
             self.to_move.white? ? 'w' : 'b',
-            self.castle_rights.fen,
+            [self.castle_rights.fen, '-'].max,
             "-",
             0,
             0
