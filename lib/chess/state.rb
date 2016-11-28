@@ -14,9 +14,7 @@ module Chess
       self.dup.tap do |succ|
         succ.predecessor = self
         succ.to_move = self.to_move.opponent
-
-        # execute basic move
-        succ.board[*move.to.coordinates].put(succ.board[*move.from.coordinates].take)
+        succ.en_passant = nil
 
         # update castle rights
         if move.piece.is_a? King
@@ -41,7 +39,22 @@ module Chess
             CastleRights::Kingside
           end
           succ.castle_rights[move.piece.team].delete(side) if side
+        elsif move.piece.is_a? Pawn
+          # detect en passant
+          # capturing move on empty field = en passant
+          if move.to.file != move.from.file && move.to.empty?
+            # field of captured pawn, remove it
+            succ.board[move.from.rank, move.to.file].take
+
+          # double step, enable en_passant
+          elsif (move.from.rank - move.to.rank).abs == 2
+            skipped_rank = [move.from.rank, move.to.rank].max - 1
+            succ.en_passant = succ.board[skipped_rank, move.from.file]
+          end
         end
+
+        # execute basic move
+        succ.board[*move.to.coordinates].put(succ.board[*move.from.coordinates].take)
       end
     end
 

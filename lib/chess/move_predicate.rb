@@ -86,8 +86,15 @@ module Chess
 
     def EN_PASSANT
       Base.new do |context|
-        # TODO
-        []
+        [].tap do |moves|
+          if context.state.en_passant
+            moves << Move.new(
+              context.source, context.state.en_passant
+            ) if [RELATIVE(1, 1), RELATIVE(1, -1)].any? do |move|
+              move.apply(context).include? context.state.en_passant
+            end
+          end
+        end
       end
     end
 
