@@ -34,25 +34,6 @@ module Chess
       end
     end
 
-    # Only prints board part
-    def as_fen
-      fields.map do |rank|
-        "".tap do |line|
-          empty_spaces = 0
-          rank.each do |field|
-            if field.has_piece?
-              line << empty_spaces.to_s if empty_spaces > 0
-              empty_spaces = 0
-              line << field.piece.an_fen
-            else
-              empty_spaces += 1
-            end
-          end
-          line << empty_spaces.to_s if empty_spaces > 0
-        end
-      end.join('/')
-    end
-
     def self.from_map(text)
       Board.new.tap do |board|
         text.lines.each_with_index do |line, rank|

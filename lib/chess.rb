@@ -1,5 +1,6 @@
 require 'chess/board'
 require 'chess/castle_rights'
+require 'chess/fen'
 require 'chess/field'
 require 'chess/move'
 require 'chess/move_context'

@@ -51,31 +51,5 @@ module Chess
         copy.castle_rights = Hash[castle_rights.map{|k, v| [k, v.dup]}]
       end
     end
-
-    def as_fen
-      [
-        board.as_fen,
-        to_move.white? ? 'w' : 'b',
-        castle_rights_fen,
-        "-",
-        0,
-        0
-      ].join " "
-    end
-
-    def castle_rights_fen
-      "".tap do |fen|
-        castle_rights.each do |team, sides|
-          sides.each do |side|
-            s = case side
-            when CastleRights::Queenside then 'q'
-            when CastleRights::Kingside then 'k'
-            end
-            s.upcase! if team.white?
-            fen << s
-          end
-        end
-      end
-    end
   end
 end

@@ -20,11 +20,6 @@ module Chess
     def an
       self.class.to_s[0]
     end
-
-    # algebraic notation used in FEN
-    def an_fen
-      team == Team::BLACK ? an.downcase : an.upcase
-    end
   end
 
   class Bishop < Piece
