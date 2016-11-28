@@ -10,7 +10,7 @@ class State
   end
 
   def execute(move)
-    self.clone.tap do |succ|
+    self.dup.tap do |succ|
       succ.predecessor = self
       succ.to_move = self.to_move.opponent
 
@@ -44,12 +44,42 @@ class State
     end
   end
 
-  def as_fen
+  def dup
+    super.tap do |copy|
+      copy.board = board.dup
+      copy.castle_rights = Hash[castle_rights.map{|k, v| [k, v.dup]}]
+    end
+  end
 
+  def as_fen
+    [
+      board.as_fen,
+      to_move.white? ? 'w' : 'b',
+      castle_rights_fen,
+      "-",
+      0,
+      0
+    ].join " "
+  end
+
+  def castle_rights_fen
+    "".tap do |fen|
+      castle_rights.each do |team, sides|
+        sides.each do |side|
+          s = case side
+          when CastleRights::Queenside then 'q'
+          when CastleRights::Kingside then 'k'
+          end
+          s.upcase! if team.white?
+          fen << s
+        end
+      end
+    end
   end
 end
 
 class Board
+  include Enumerable
   attr_reader :fields
 
   def initialize
@@ -121,6 +151,27 @@ class Board
       end
     end
   end
+
+  def each
+    fields.each do |rank|
+      rank.each(&:yield)
+    end
+  end
+
+  def dup
+    Board.new.tap do |board|
+      8.times do |rank|
+        8.times do |file|
+          board[rank, file] = self[rank, file].dup
+        end
+      end
+    end
+  end
+
+  protected
+  def []=(rank, file, field)
+    fields[rank][file] = field
+  end
 end
 
 class Field
@@ -177,6 +228,15 @@ class Field
   def hash
     self.rank << 4 | self.file
   end
+
+  def dup
+    super.tap do |copy|
+      copy.piece = piece.dup if piece
+    end
+  end
+
+  protected
+  attr_writer :piece
 end
 
 module MovePredicate
@@ -214,7 +274,7 @@ module MovePredicate
     end
 
     def all_directions
-      self.clone.tap { |me| me.directions = [NORTH, EAST, SOUTH, WEST] }
+      self.dup.tap { |me| me.directions = [NORTH, EAST, SOUTH, WEST] }
     end
 
     def once
@@ -230,11 +290,11 @@ module MovePredicate
     end
 
     def n(n)
-      self.clone.tap { |me| me.n = n }
+      self.dup.tap { |me| me.n = n }
     end
 
     def if(&block)
-      self.clone.tap { |me| me.if = block }
+      self.dup.tap { |me| me.if = block }
     end
 
     def apply(context)
