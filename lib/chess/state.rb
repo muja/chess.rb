@@ -3,7 +3,7 @@ module Chess
     attr_writer :predecessor
     attr_accessor :board, :castle_rights, :to_move, :en_passant
 
-    def initialize(board = Board.default, cr = CastleRights.new, ep = nil, to_move = Team::WHITE)
+    def initialize(board = Board.new, cr = CastleRights.new, ep = nil, to_move = Team::WHITE)
       @board = board
       @castle_rights = cr
       @en_passant = ep
