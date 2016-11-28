@@ -6,11 +6,7 @@ module Chess
       def to_map
         fields.map do |rank|
           rank.map do |field|
-            if field.has_piece?
-              line << field.piece.fen
-            else
-              line << '.'
-            end
+            field.has_piece? ? field.piece.fen : '.'
           end.join
         end.join("\n")
       end
