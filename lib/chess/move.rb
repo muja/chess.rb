@@ -16,7 +16,7 @@ module Chess
     end
 
     def ==(other)
-      return 0
+      return self.from == other.from && self.to == other.to
     end
     alias_method :eql?, :==
 
