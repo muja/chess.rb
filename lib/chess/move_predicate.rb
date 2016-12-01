@@ -23,14 +23,27 @@ module Chess
       end
       include Directions
 
-      attr_writer :directions, :n, :if
-
       def initialize(rank, file)
-        @rank = rank
-        @file = file
+        @positions = [[rank, file]]
         @directions = [FORWARD]
-        @n = 1
+        @steps = 1
         @if = ->(_){ true }
+        @if_outset = false
+        @en_passant = false
+      end
+
+      def or(rank, file)
+        self.dup.tap { |me| me.positions = @positions + [[rank, file]] }
+      end
+
+      def capture_only
+        self.if do |to|
+          to.has_piece? && to.piece.team != self.team
+        end
+      end
+
+      def non_capturing
+        self.if(&:empty?)
       end
 
       def all_directions
@@ -38,80 +51,87 @@ module Chess
       end
 
       def once
-        self.n(1)
+        self.steps(1)
       end
 
       def twice
-        self.n(2)
+        self.steps(2)
       end
 
       def indefinitely
-        self.n(7)
+        self.steps(7)
       end
 
-      def n(n)
-        self.dup.tap { |me| me.n = n }
+      def steps(steps)
+        self.dup.tap { |me| me.steps = steps }
       end
 
       def if(&block)
         self.dup.tap { |me| me.if = block }
       end
 
+      def if_outset
+        self.dup.tap { |me| me.if_outset = true }
+      end
+
+      def en_passant
+        self.dup.tap { |me| me.en_passant = true }
+      end
+
       def apply(context)
-        [].tap do |moves|
+        [].tap do |targets|
+          from = context.board.where(context.piece)
+          if @if_outset
+            field = Board.default.at(from)
+            next if field.empty? || field.piece.class != context.piece.class
+          end
           @directions.each do |direct|
-            current = context.source
-            @n.times do
-              coords = current + direct[@rank, @file, context]
-              break if context.board.out_of_bounds?(*coords)
-              current = context.board[*coords]
-              move = Move.new(context.source, current)
-              if @if[move]
-                moves << move
+            @positions.each do |rank, file|
+              current = from
+              @steps.times do
+                coords = current + direct[rank, file, context]
+                break if context.board.out_of_bounds?(*coords)
+                current = context.board[*coords]
+                targets << current if context.piece.instance_exec(current, &@if) || (
+                  @en_passant && context.state.en_passant == current
+                )
+                break if current.has_piece?
               end
-              break if current.has_piece?
             end
           end
         end
       end
+
+      def dup
+        super.tap do |me|
+          me.directions = @directions.dup
+          me.positions = @positions.dup
+        end
+      end
+
+      protected
+      attr_writer :directions, :steps, :if, :if_outset, :positions, :en_passant
     end
-    
+
     def RELATIVE(rank, file)
       Relative.new(rank, file)
     end
 
-    def FORWARD(n)
-      Relative.new(1, 0).n(n)
-    end
-
-    def EN_PASSANT
-      Base.new do |context|
-        [].tap do |moves|
-          if context.state.en_passant
-            moves << Move.new(
-              context.source, context.state.en_passant
-            ) if [RELATIVE(1, 1), RELATIVE(1, -1)].any? do |move|
-              move.apply(context).include? context.state.en_passant
-            end
-          end
-        end
-      end
+    def FORWARD(steps)
+      Relative.new(1, 0).steps(steps)
     end
 
     def CASTLE
       Base.new do |context|
         context.state.castle_rights[context.piece.team].map do |side|
           files = side.necessary_free_files
-          predicate = files.all? do |file|
+          fields_clean = files.all? do |file|
             field = context.board[context.piece.team.home_rank, file]
-            field.empty? && !Utils.field_attacked?(context.board, field, context.piece.team.opponent)
-          end
-          if predicate
-            Move.new(
-              context.source,
-              context.board[context.piece.team.home_rank, side.file]
+            field.empty? && !Utils.field_attacked?(
+              field, on: context.board, by: context.piece.team.opponent
             )
           end
+          context.board[context.piece.team.home_rank, side.file] if fields_clean
         end.compact
       end
     end

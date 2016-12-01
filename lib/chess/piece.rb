@@ -9,12 +9,12 @@ module Chess
       @team = team
     end
 
-    def possible_moves(context)
-      context.piece = self
-      self.class::MOVES.map do |move|
-        move.apply(context)
-      end.flatten.select do |move|
-        move.to.empty? || context.piece.team != move.to.piece.team
+    def accessible_fields(state)
+      context = MoveContext.new(state, state.board.where(self))
+      self.class::MOVES.map do |directive|
+        directive.apply(context)
+      end.flatten.select do |target|
+        target.empty? || self.team != target.piece.team
       end.uniq
     end
   end
@@ -27,8 +27,7 @@ module Chess
 
   class Knight < Piece
     MOVES = [
-      RELATIVE(2, 1).all_directions,
-      RELATIVE(1, 2).all_directions
+      RELATIVE(2, 1).or(1, 2).all_directions,
     ]
   end
 
@@ -52,14 +51,9 @@ module Chess
 
   class Pawn < Piece
     MOVES = [
-      # NON-CAPTURING
-      FORWARD(1).if { |move| move.to.empty? },
-      FORWARD(2).if { |move| move.to.empty? && (move.to.rank - move.piece.team.home_rank).abs == 3 },
-
-      # CAPTURING
-      RELATIVE(1, 1).if { |move| move.to.has_piece? && move.to.piece.team != move.piece.team },
-      RELATIVE(1, -1).if { |move| move.to.has_piece? && move.to.piece.team != move.piece.team },
-      EN_PASSANT()
+      FORWARD(1).non_capturing,
+      FORWARD(2).non_capturing.if_outset,
+      RELATIVE(1, 1).or(1, -1).capture_only.en_passant,
     ]
   end
 end

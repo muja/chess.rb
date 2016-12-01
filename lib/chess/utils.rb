@@ -31,8 +31,12 @@ module Chess
       [piece, dest]
     end
 
-    def field_attacked?(board, field, team)
-      false
+    def field_attacked?(field, on: , by: )
+      field_attackers(field, on: on, by: by).any?
+    end
+
+    def field_attackers(field, on: , by: )
+      return []
     end
   end
 end
