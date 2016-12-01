@@ -18,14 +18,7 @@ module Chess
               line.strip.chars.each_with_index do |char, file|
                 next if char == '.'
                 team = char.downcase == char ? Team::BLACK : Team::WHITE
-                piece = {
-                  r: Rook,
-                  n: Knight,
-                  b: Bishop,
-                  q: Queen,
-                  k: King,
-                  p: Pawn
-                }[char.downcase.intern].new(team)
+                piece = FEN::PIECES[char.downcase].new(team)
                 board[rank, file].put(piece)
               end
             end

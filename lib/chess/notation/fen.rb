@@ -7,6 +7,15 @@ require 'chess/piece'
 module Chess
   module Notation
     module FEN
+      PIECES = {
+        'r' => Rook,
+        'n' => Knight,
+        'b' => Bishop,
+        'q' => Queen,
+        'k' => King,
+        'p' => Pawn
+      }
+
       module Board
         def fen
           self.fields.map do |rank|
@@ -24,6 +33,31 @@ module Chess
               line << empty_spaces.to_s if empty_spaces > 0
             end
           end.join('/')
+        end
+        alias_method :to_s, :fen
+
+        def self.included(base)
+          def base.default
+            @@default ||= self.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+          end
+
+          def base.from_fen(fen)
+            self.new.tap do |board|
+              fen.split("/").each_with_index do |line, rank|
+                file = 0
+                line.chars.each do |char|
+                  if piecec = PIECES[char.downcase]
+                    board[rank, file].put piecec.new(
+                      char.downcase == char ? Team::BLACK : Team::WHITE
+                    )
+                    file += 1
+                  else
+                    file += char.to_i
+                  end
+                end
+              end
+            end
+          end
         end
       end
 
