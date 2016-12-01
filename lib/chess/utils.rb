@@ -36,7 +36,17 @@ module Chess
     end
 
     def field_attackers(field, on: , by: )
-      return []
+      # put an enemy piece on that square for capturing moves
+      original_piece = on.board.at(field).take
+      on.board.at(field).put(Pawn.new(by.opponent))
+      [].tap do |attackers|
+        on.board.map(&:piece).reject(&:nil?).reject{ |piece| piece.team != by }.each do |piece|
+          attackers << piece if piece.accessible_fields(on).include? field
+        end
+      end
+    ensure
+      # put original piece back
+      on.board.at(field).put(original_piece)
     end
   end
 end

@@ -123,12 +123,13 @@ module Chess
 
     def CASTLE
       Base.new do |context|
+        next [] if Rules.check? context.state, against: context.piece.team
         context.state.castle_rights[context.piece.team].map do |side|
           files = side.necessary_free_files
           fields_clean = files.all? do |file|
             field = context.board[context.piece.team.home_rank, file]
             field.empty? && !Utils.field_attacked?(
-              field, on: context.board, by: context.piece.team.opponent
+              field, on: context.state, by: context.piece.team.opponent
             )
           end
           context.board[context.piece.team.home_rank, side.file] if fields_clean

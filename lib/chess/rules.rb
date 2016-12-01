@@ -1,8 +1,8 @@
 module Chess
   module Rules
     extend self
-    def check?(state, team = state.to_move)
-      Utils.field_attacked?(state.board.king_square(team), on: state.board, by: team.opponent)
+    def check?(state, against: state.to_move)
+      Utils.field_attacked?(state.board.king_square(against), on: state, by: against.opponent)
     end
 
     def legal_move?(state, move)
