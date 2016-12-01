@@ -13,6 +13,14 @@ module Chess
       fields[rank][file]
     end
 
+    def where(piece)
+      self.find{ |field| field.piece == piece }
+    end
+
+    def king_square(team)
+      where(King.new(team))
+    end
+
     def out_of_bounds?(rank, file)
       [rank, file].any? do |i|
         i < 0 || i >= fields.length
@@ -21,7 +29,9 @@ module Chess
 
     def each
       fields.each do |rank|
-        rank.each(&:yield)
+        rank.each do |field|
+          yield field
+        end
       end
     end
 

@@ -27,6 +27,10 @@ module Chess
       !piece
     end
 
+    def to(other)
+      Move.new(self, other)
+    end
+
     def has_piece?
       !empty?
     end

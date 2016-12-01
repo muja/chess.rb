@@ -44,6 +44,10 @@ module Chess
 
   class King < Piece
     MOVES = Queen::MOVES.map(&:once).push(CASTLE())
+
+    def ==(other)
+      other.is_a?(King) && other.team == self.team
+    end
   end
 
   class Pawn < Piece
