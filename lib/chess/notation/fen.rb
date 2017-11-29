@@ -66,7 +66,7 @@ module Chess
           [
             self.board.fen,
             self.to_move.white? ? 'w' : 'b',
-            [self.castle_rights.fen, '-'].max,
+            [self.castle_rights_fen, '-'].max,
             self.en_passant || '-',
             0,
             0
@@ -75,13 +75,13 @@ module Chess
       end
 
       module CastleRights
-        def fen
+        def castle_rights_fen
           "".tap do |fen|
             castle_rights.each do |team, sides|
               sides.each do |side|
                 s = case side
-                when CastleRights::Queenside then 'q'
-                when CastleRights::Kingside then 'k'
+                when Chess::CastleRights::Queenside then 'q'
+                when Chess::CastleRights::Kingside then 'k'
                 end
                 s.upcase! if team.white?
                 fen << s
@@ -100,7 +100,7 @@ module Chess
       end
       Chess::Board.include(FEN::Board)
       Chess::State.include(FEN::State)
-      Chess::CastleRights.include(FEN::CastleRights)
+      Chess::State.include(FEN::CastleRights)
       Chess::Piece.include(FEN::Piece)
     end
   end
